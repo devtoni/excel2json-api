@@ -1,14 +1,11 @@
+import { getExtension } from '../../helpers'
+import { errorType } from '../errorTypes'
+
 export const upload = (multer, storage) =>
   multer({
     storage,
     fileFilter: (req, file, callback) => {
-      if (
-        ['xls', 'xlsx'].indexOf(
-          file.originalname.split('.')[file.originalname.split('.').length - 1],
-        ) === -1
-      ) {
-        return callback(new Error('Wrong extension type'))
-      }
-      callback(null, true)
+      if (getExtension(file.originalname)) return callback(null, true)
+      callback(errorType.error)
     },
   }).single('file')
