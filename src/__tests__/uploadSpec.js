@@ -2,8 +2,9 @@ import fs from 'fs'
 import axios from 'axios'
 import formData from 'form-data'
 import startServer from '../app'
-import { getPathFromRoot } from '../helpers'
 import books from './fixtures/books.json'
+import { getPathFromRoot } from '../helpers'
+import { errorType } from '../config/errorTypes'
 
 let server
 
@@ -80,11 +81,32 @@ describe('upload/ route', () => {
     }
   })
 
-  test('POST, It should return an error message when file is empty or is not the correct type', async () => {
+  test('POST, It should return an error message when file is empty', async () => {
     const { data: { err_desc: errorDescription } } = await axios.post(
       'http://localhost:3001/upload',
     )
-    expect(errorDescription).toContain('No file passed')
+    expect(errorDescription).toContain(errorType.noFile.err_desc)
+  })
+
+  test('POST, It should return an error message when file extension is not correct', async () => {
+    const filePath = getPathFromRoot(
+      'src',
+      '__tests__',
+      'examples',
+      'index.html',
+    )
+    const existsFile = fs.existsSync(filePath)
+    if (existsFile) {
+      const form = new formData()
+      form.append('file', fs.createReadStream(filePath))
+      const response = await axios.post('http://localhost:3001/upload', form, {
+        headers: form.getHeaders(),
+      })
+      const { data: { err_desc: errorDescription } } = response
+      expect(errorDescription).toContain(errorType.error.err_desc)
+    } else {
+      throw new Error('Error filepath')
+    }
   })
 
   test('POST, It should return an error message when file is corrupted', async () => {
@@ -102,7 +124,7 @@ describe('upload/ route', () => {
         headers: form.getHeaders(),
       })
       const { data: { err_desc: errorDescription } } = response
-      expect(errorDescription).toContain('Corrupted excel file')
+      expect(errorDescription).toContain(errorType.corruptedFile.err_desc)
     } else {
       throw new Error('Error filepath')
     }

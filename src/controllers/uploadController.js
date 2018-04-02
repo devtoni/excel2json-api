@@ -10,12 +10,12 @@ export const postUpload = (req, res) => {
     let exceltojson
 
     if (err) {
-      res.json(errorType(err).error)
+      res.json(errorType.error)
       return
     }
 
     if (!req.file) {
-      res.json(errorType().noFile)
+      res.json(errorType.noFile)
       return
     }
 
@@ -26,7 +26,7 @@ export const postUpload = (req, res) => {
     try {
       processExcelToJson(exceltojson, req, res)
     } catch (e) {
-      res.json(errorType().corruptedFile)
+      res.json(errorType.corruptedFile)
     }
   })
 }
